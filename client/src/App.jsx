@@ -1,11 +1,18 @@
 import './App.css'
+import Navbar from './components/Navbar'
+import Hero from './components/Hero'
+import Trends from './components/Trends'
+import Contact from './components/Contact'
 
 function App() {
 
   return (
-    <>
-      Hello World
-    </>
+    <div className='App'>
+      <Navbar/>
+      <Hero/>
+      <Trends/>
+      <Contact/>
+    </div>
   )
 }
 
