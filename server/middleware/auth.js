@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 
-import { jwt_secret } from '../config'
+import { jwt_secret } from '../config.js'
 
 export function auth(req, res, next){
     const token = req.header('x-auth-token');
