@@ -1,75 +1,68 @@
-import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
+import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.preprocessing import StandardScaler
 
-# Function to prepare the data
-def prepare_data(company_data, news_data):
-    df_list = []
-    for symbol, data in company_data.items():
-        df = pd.DataFrame.from_dict(data['Time Series (Daily)'], orient='index')
-        df = df[['4. close', '5. volume']].astype(float)
-        df['symbol'] = symbol
-        df_list.append(df)
+def preprocess_esg_data(esg_data):
+    # Select only numeric columns for the preprocessing
+    numeric_cols = ['environment_score', 'social_score', 'governance_score', 'total_score']
     
-    stock_data = pd.concat(df_list)
-    stock_data.index = pd.to_datetime(stock_data.index)
-    stock_data.sort_index(inplace=True)
+    # Fill NaN values with the mean for numeric columns
+    esg_data[numeric_cols] = esg_data[numeric_cols].fillna(esg_data[numeric_cols].mean())
     
-    # Feature Engineering: Adding moving averages and daily returns
-    stock_data['ma_5'] = stock_data.groupby('symbol')['4. close'].transform(lambda x: x.rolling(window=5).mean())
-    stock_data['ma_10'] = stock_data.groupby('symbol')['4. close'].transform(lambda x: x.rolling(window=10).mean())
-    stock_data['return'] = stock_data.groupby('symbol')['4. close'].transform(lambda x: x.pct_change())
-    
-    # Adding sentiment scores from news data
-    for symbol, data in news_data.items():
-        sentiment_scores = [news['sentiment_score'] for news in data['news']]
-        stock_data.loc[stock_data['symbol'] == symbol, 'sentiment_score'] = np.mean(sentiment_scores)
-    
-    stock_data.dropna(inplace=True)
-    
-    return stock_data
+    return esg_data
 
-# Function to train the model
-def train_model(stock_data):
-    X = stock_data[['4. close', '5. volume', 'ma_5', 'ma_10', 'return', 'sentiment_score']]
-    y = stock_data['4. close'].shift(-1).dropna()
-    X = X.iloc[:-1]
+def preprocess_sentiment_data(news_data):
+    # Preprocessing News sentiment data
+    sentiment_scores = {}
+    for company, data in news_data.items():
+        sentiments = [article['overall_sentiment_score'] for article in data['feed']]
+        sentiment_scores[company] = np.mean(sentiments) if sentiments else 0
+    return pd.DataFrame(list(sentiment_scores.items()), columns=['Company', 'SentimentScore'])
+
+def preprocess_time_series_data(company_data):
+    # Preprocessing Time Series data
+    price_data = {}
+    for company, data in company_data.items():
+        prices = [float(value['4. close']) for date, value in data['Time Series (Daily)'].items()]
+        price_data[company] = np.mean(prices) if prices else 0
+    return pd.DataFrame(list(price_data.items()), columns=['Company', 'AveragePrice'])
+
+def feature_engineering(esg_data, sentiment_data, price_data):
+    # Rename the 'ticker' column in esg_data to 'Company' and convert to uppercase
+    esg_data = esg_data.rename(columns={'ticker': 'Company'})
+    esg_data['Company'] = esg_data['Company'].str.upper()
+    
+    # Convert the 'Company' columns in sentiment_data and price_data to uppercase
+    sentiment_data['Company'] = sentiment_data['Company'].str.upper()
+    price_data['Company'] = price_data['Company'].str.upper()
+    
+    # Merging datasets
+    merged_data = esg_data.merge(sentiment_data, on='Company').merge(price_data, on='Company')
+    return merged_data
+
+def train_model(data):
+    # Drop non-numeric columns
+    X = data.drop(columns=['Company', 'RecommendationScore', 'name', 'currency', 'exchange', 'industry', 'logo', 'weburl', 'environment_grade', 'environment_level', 'social_grade', 'social_level', 'governance_grade', 'governance_level', 'last_processing_date', 'total_grade', 'total_level'])
+    y = data['RecommendationScore']
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
     
     model = RandomForestRegressor(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
     
-    y_pred = model.predict(X_test)
-    mse = mean_squared_error(y_test, y_pred)
-    
-    return model, mse
+    return model, scaler
 
-# Function to make recommendations
-def make_recommendations(model, stock_data):
-    X = stock_data[['4. close', '5. volume', 'ma_5', 'ma_10', 'return', 'sentiment_score']]
+def predict_investments(model, scaler, data):
+    # Drop non-numeric columns
+    X = data.drop(columns=['Company', 'RecommendationScore', 'name', 'currency', 'exchange', 'industry', 'logo', 'weburl', 'environment_grade', 'environment_level', 'social_grade', 'social_level', 'governance_grade', 'governance_level', 'last_processing_date', 'total_grade', 'total_level'])
+    X = scaler.transform(X)
     predictions = model.predict(X)
     
-    stock_data['prediction'] = predictions
-    recommendations = stock_data.groupby('symbol')['prediction'].last().sort_values(ascending=False).head(10)
-    
-    return recommendations.index.tolist()
-
-# Example usage
-if __name__ == "__main__":
-    # Load your data from the JSON file
-    import json
-    with open('/mnt/data/twocombinedresp.json', 'r') as f:
-        data = json.load(f)
-    
-    company_data = data['company_data']
-    news_data = data['news_data']
-    
-    stock_data = prepare_data(company_data, news_data)
-    model, mse = train_model(stock_data)
-    recommendations = make_recommendations(model, stock_data)
-    
-    print("Mean Squared Error:", mse)
-    print("Top Recommendations:", recommendations)
+    data['RecommendationScore'] = predictions
+    return data.sort_values(by='RecommendationScore', ascending=False)
