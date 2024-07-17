@@ -6,6 +6,9 @@ app = Flask(__name__)
 
 alphaVantageKey = os.getenv("ALPHA_VANTAGE_KEY")
 
+interestStocks = []
+ownedStocks = []
+
 company_data = {}
 news_data = {}
 
@@ -14,14 +17,36 @@ news_data = {}
 def home():
     return "Welcome to the Flask server!"
 
+# POST req to UPDATE user interest stocks
+@app.route('/api/data/userinterests', methods=['POST'])
+def get_user_interest():
+    global interestStocks
+    data = request.json
+    if 'stocks' in data:
+        interestStocks = data['stocks']
+        return jsonify({"message": "User interests updated successfully!", "interestStocks": interestStocks}), 200
+    else:
+        return jsonify({"error": "No stocks data provided"}), 400
+
+# POST req to UPDATE user current holdings
+@app.route('/api/data/userholdings', methods=['POST'])  # Fix: Change 'method' to 'methods'
+def update_user_holdings():
+    global ownedStocks
+    data = request.json
+    if 'stocks' in data:
+        ownedStocks = data['stocks']
+        return jsonify({"message": "User holdings updated successfully!", "OwnedStocks": ownedStocks}), 200
+    else:
+        return jsonify({"error": "No stocks data provided"}), 400
+
 
 # GET REQ
-@app.route('/api', methods=['GET'])
+@app.route('/api/getmetrics', methods=['GET'])
 def api_home():
-    
-    user_companies = request.args.get('companies', 'INTC,NVDA').split(',')
+    if not interestStocks:
+        return jsonify({"message": "Please call the interest POST API first."}), 400
 
-    for company in user_companies:
+    for company in interestStocks:
         # Fetch Time Series Daily
         timeSeriesUrl = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={company}&outputsize=full&apikey={alphaVantageKey}"
         r1 = requests.get(timeSeriesUrl)
@@ -34,16 +59,6 @@ def api_home():
 
     return jsonify({"company_data": company_data, "news_data": news_data})
 
-
-# POST REQ
-@app.route('/api/data', methods=['POST'])
-def api_data():
-    data = request.get_json()
-    response = {
-        "received_data": data,
-        "message": "Data received successfully!"
-    }
-    return jsonify(response)
 
 
 # ML prediction endpoint
