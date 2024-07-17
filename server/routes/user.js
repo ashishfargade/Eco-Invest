@@ -1,10 +1,10 @@
 import express, { Router } from "express";
-import bcryptjs from "bcryptjs";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { check, validationResult } from "express-validator";
 import gravatar from "gravatar";
 
-import User from "../models/Userjs";
+import User from "../models/User.js";
 import { jwt_secret } from "../config.js";
 
 const router = Router();
@@ -16,7 +16,7 @@ router.post(
     "/",
     [
         check("name", "Name is required").not().isEmpty(),
-        check("email", "Please include a valid email").isEmpty(),
+        check("email", "Please include a valid email").not().isEmpty(),
         check("password", "Password should be min 6 characters").isLength({
             min: 6,
         }),
@@ -69,7 +69,7 @@ router.post(
 
             jwt.sign(
                 payload,
-                jwtSecret,
+                jwt_secret,
                 { expiresIn: 360000 },
                 (err, token) => {
                     if (err) throw err;
