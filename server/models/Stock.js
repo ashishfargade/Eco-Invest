@@ -6,10 +6,16 @@ const StockSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    name : {
+        type: String,
+        required : true,
+        unique : true
+    },
     companyName: {
         type: String,
         required: true,
     },
+
 });
 
 const Stock = mongoose.model('Stock', StockSchema);
