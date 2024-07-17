@@ -1,8 +1,8 @@
 import os
 import json
 import requests
-import pandas as pd
 import numpy as np
+import pandas as pd
 from flask import Flask, jsonify, request
 from model import preprocess_esg_data, preprocess_sentiment_data, preprocess_time_series_data, feature_engineering, train_model, predict_investments
 
@@ -12,7 +12,7 @@ alphaVantageKey = os.getenv("ALPHA_VANTAGE_KEY")
 esg_data = pd.read_csv('./dataset/esg_data.csv')
 
 interestStocks = []
-ownedStocks = []
+ownedStocks = {}
 
 stocks_history_data = {}
 news_data = {}
@@ -28,7 +28,7 @@ def update_user_holdings():
     global ownedStocks
     data = request.json
     if 'stocks' in data:
-        ownedStocks = data['stocks']
+        ownedStocks = {stock['ticker']: stock['volume'] for stock in data['stocks']}
         return jsonify({"message": "User holdings updated successfully!", "OwnedStocks": ownedStocks}), 200
     else:
         return jsonify({"error": "No stocks data provided"}), 400
@@ -67,7 +67,7 @@ def api_home():
 # Predict investments recommendations
 @app.route('/api/predict', methods=['GET'])
 def predict_recommendations():
-    global esg_data, news_data, stocks_history_data
+    global esg_data, news_data, stocks_history_data, ownedStocks
     
     esg_data = preprocess_esg_data(esg_data)
     sentiment_data = preprocess_sentiment_data(news_data)
@@ -81,6 +81,14 @@ def predict_recommendations():
     model, scaler = train_model(merged_data)
     
     recommendations = predict_investments(model, scaler, merged_data)
+    
+    # Adjust recommendations based on user holdings
+    for index, row in recommendations.iterrows():
+        ticker = row['Company']
+        if ticker in ownedStocks:
+            volume = ownedStocks[ticker]
+            recommendations.at[index, 'RecommendationScore'] -= volume * 0.005  # Adjust the factor as needed
+
     top_recommendations = recommendations.head(10)
     
     return jsonify(top_recommendations.to_dict(orient='records'))
