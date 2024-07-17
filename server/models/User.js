@@ -1,17 +1,21 @@
 import mongoose from "mongoose";
 
 const UserStockSchema = new mongoose.Schema({
-    symbol: {
+    ticker: {
+        type: mongoose.Schema.Types.String,
+        ref: 'stockSchema',
+        required: true
+    },
+    name: {
         type: String,
         required: true
     },
-    quantity: {
+    volume: {
         type: Number,
         required: true
     },
     valueAtPurchase: {
         type: Number,
-        required: true
     },
     currentValue: {
         type: Number,

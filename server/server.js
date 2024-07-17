@@ -5,6 +5,8 @@ import { port } from './config.js';
 import { connectDB } from './db.js';
 import user from './routes/user.js';
 import auth from './routes/auth.js';
+import stock from './routes/stock.js';
+import userStock from './routes/userStock.js';
 
 const app = express();
 
@@ -25,6 +27,8 @@ app.get('/', (req, res) => {
 
 app.use('/api/user', user);
 app.use('/api/auth', auth);
+app.use('/api/stock', stock);
+app.use('/api/userStock', userStock);
 
 app.listen(port, () => {
     console.log(`Server running on PORT ${port}`);
