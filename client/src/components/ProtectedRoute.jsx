@@ -1,10 +1,10 @@
 // ProtectedRoute.jsx
-import React, { useContext } from 'react';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { AuthContext } from './AuthContext'; // Ensure this matches the file name
+import { useSelector } from 'react-redux';
 
 const ProtectedRoute = ({ element }) => {
-    const { isAuthenticated } = useContext(AuthContext);
+    const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
     const location = useLocation();
 
     return isAuthenticated ? element : <Navigate to="/login" state={{ from: location }} replace />;

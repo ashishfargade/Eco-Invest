@@ -1,17 +1,38 @@
-// AuthContext.jsx
-import React, { createContext, useState } from 'react';
+// import React, { createContext, useState, useEffect } from 'react';
+// import { useCookies } from 'react-cookie';
 
-export const AuthContext = createContext();
+// export const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+// export const AuthProvider = ({ children }) => {
+//     const [isAuthenticated, setIsAuthenticated] = useState(false);
+//     const [cookies, setCookie, removeCookie] = useCookies(['token']);
 
-    const login = () => setIsAuthenticated(true);
-    const logout = () => setIsAuthenticated(false);
+//     useEffect(() => {
+//         const token = cookies.token;
+//         // Set isAuthenticated based on token presence
+//         setIsAuthenticated(!!token);
+//     }, [cookies.token]);
 
-    return (
-        <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
-            {children}
-        </AuthContext.Provider>
-    );
-};
+//     const login = (token) => {
+//         // const isProduction = window.location.protocol === 'https:';
+
+//         setCookie('token', token, {
+//             path: '/',
+//             httpOnly: true, // Client-side access
+//             // secure: isProduction, // Secure cookies if running over HTTPS
+//             sameSite: 'Strict' // Adjust based on your requirements
+//         });
+//         setIsAuthenticated(true);
+//     };
+
+//     const logout = () => {
+//         removeCookie('token');
+//         setIsAuthenticated(false);
+//     };
+
+//     return (
+//         <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+//             {children}
+//         </AuthContext.Provider>
+//     );
+// };
