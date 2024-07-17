@@ -20,6 +20,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/esg" element={<ESG />} />
             <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
+            {/* <Route path="/dashboard" element={<Dashboard />} /> */}
+
           </Routes>
         </main>
       </Router>
