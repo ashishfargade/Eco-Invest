@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const location = useLocation(); // Get the current route
 
     return (
         <nav className="bg-gray-800 p-4 sticky top-0 z-50">
@@ -14,6 +15,9 @@ const Navbar = () => {
                     <Link to="/" className="text-white hover:text-blue-300">Home</Link>
                     <Link to="/dashboard" className="text-white hover:text-gray-300">Dashboard</Link>
                     <Link to="/esg" className="text-white hover:text-gray-300">What is ESG</Link>
+                    {location.pathname === '/dashboard' && (
+                        <Link to="/edit-portfolio" className="text-white hover:text-gray-300">Edit Portfolio</Link>
+                    )}
                 </div>
                 <div className="md:hidden">
                     <button onClick={() => setIsOpen(!isOpen)} className="text-white focus:outline-none">
@@ -29,6 +33,9 @@ const Navbar = () => {
                     <Link to="/dashboard" className="block text-white hover:text-gray-300">Dashboard</Link>
                     <Link to="/esg" className="block text-white hover:text-gray-300">What is ESG</Link>
                     <Link to="/contact" className="block text-white hover:text-gray-300">Contact</Link>
+                    {location.pathname === '/dashboard' && (
+                        <Link to="/edit-portfolio" className="block text-white hover:text-gray-300">Edit Portfolio</Link>
+                    )}
                 </div>
             )}
         </nav>
