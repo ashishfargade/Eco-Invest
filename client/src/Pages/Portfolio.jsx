@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios'; // Import Axios for making HTTP requests
 
 const Portfolio = () => {
   const [stocks, setStocks] = useState([
@@ -7,7 +8,7 @@ const Portfolio = () => {
   ]);
   const [selectedStock, setSelectedStock] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
-  const [newStock, setNewStock] = useState({ name: '', ticker: '', volume: ''});
+  const [newStock, setNewStock] = useState({ name: '', ticker: '', volume: '' });
 
   const handleStockClick = (stock) => {
     setSelectedStock(stock);
@@ -24,10 +25,18 @@ const Portfolio = () => {
     setNewStock({ ...newStock, [name]: value });
   };
 
-  const handleSaveNewStock = () => {
-    setStocks([...stocks, { ...newStock, id: stocks.length + 1 }]);
-    setNewStock({ name: '', ticker: '', price: '', volume: '', dateBought: '', currentPrice: '' });
-    setIsAdding(false);
+  const handleSaveNewStock = async () => {
+    try {
+      // Make a PUT request to your backend endpoint
+      const response = await axios.put('/userownedstock', newStock);
+      const updatedStocks = response.data; // Assuming the backend returns updated list of stocks
+      setStocks(updatedStocks);
+      setNewStock({ name: '', ticker: '', volume: '' }); // Clear input fields after successful save
+      setIsAdding(false); // Hide the add new stock form
+    } catch (error) {
+      console.error('Error saving new stock:', error);
+      // Handle error appropriately, e.g., show error message to user
+    }
   };
 
   const calculatePrice = (price, volume) => (price * volume).toFixed(2);

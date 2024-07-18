@@ -25,7 +25,7 @@ const Login = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'x-auth-token': `Bearer ${token}`
                 },
                 credentials: 'include',
                 body: JSON.stringify({ email, password }),

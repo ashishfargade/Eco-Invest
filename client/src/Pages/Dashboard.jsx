@@ -152,23 +152,6 @@ const Dashboard = () => {
           <div className="mt-4">
             <StockChart symbol={selectedStock} />
           </div>
-          {/* ESG Recommendations */}
-          {/* <div className="mt-4">
-            <h2 className="text-lg font-semibold mb-2">ESG Improvement Recommendations</h2>
-            <ul>
-              {recommendations.map(stock => (
-                <li key={stock.symbol} className="mb-2">
-                  <div className="flex justify-between items-center">
-                    <span>
-                      {stock.name} ({stock.symbol})
-                    </span>
-                    <span className="text-green-600">{stock.recommendation}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div> */}
-          {/* Potential Stocks */}
           <div className="mt-4">
             <h2 className="text-lg font-semibold mb-2">Potential Stocks</h2>
             <div className="mb-2">
