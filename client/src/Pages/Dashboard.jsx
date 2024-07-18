@@ -22,14 +22,14 @@ const Dashboard = () => {
   const user = { name: 'Ashish Sanjay Fargade' };
 
   const stocks = [
-    { name: 'IBM', symbol: 'IBM', color: 'bg-gray-800', volume: 250000, industry: 'Tech', total_ESG_grade: 'A', total_esg_value: 90 },
-    { name: 'Microsoft', symbol: 'MSFT', color: 'bg-gray-800', volume: 300000, industry: 'Tech', total_ESG_grade: 'AA', total_esg_value: 85 },
-    { name: 'Google', symbol: 'GOOGL', color: 'bg-gray-800', volume: 150000, industry: 'Tech', total_ESG_grade: 'A', total_esg_value: 88 },
-    { name: 'Nvidia', symbol: 'NVDA', color: 'bg-gray-800', volume: 100000, industry: 'Tech', total_ESG_grade: 'B', total_esg_value: 60 },
-    { name: 'Meta', symbol: 'META', color: 'bg-gray-800', volume: 200000, industry: 'Tech', total_ESG_grade: 'BB', total_esg_value: 85 },
-    { name: 'AMD', symbol: 'AMD', color: 'bg-gray-800', volume: 175000, industry: 'Tech', total_ESG_grade: 'B', total_esg_value: 80 },
-    { name: 'Micron', symbol: 'MU', color: 'bg-gray-800', volume: 80000, industry: 'Tech', total_ESG_grade: 'AA', total_esg_value: 82 },
-    { name: 'Crowd', symbol: 'CRWD', color: 'bg-gray-800', volume: 90000, industry: 'Tech', total_ESG_grade: 'A', total_esg_value: 88 },
+    // { name: 'IBM', symbol: 'IBM', color: 'bg-gray-800', volume: 250000, industry: 'Tech', total_ESG_grade: 'A', total_esg_value: 90 },
+    // { name: 'Microsoft', symbol: 'MSFT', color: 'bg-gray-800', volume: 300000, industry: 'Tech', total_ESG_grade: 'AA', total_esg_value: 85 },
+    // { name: 'Google', symbol: 'GOOGL', color: 'bg-gray-800', volume: 150000, industry: 'Tech', total_ESG_grade: 'A', total_esg_value: 88 },
+    // { name: 'Nvidia', symbol: 'NVDA', color: 'bg-gray-800', volume: 100000, industry: 'Tech', total_ESG_grade: 'B', total_esg_value: 60 },
+    // { name: 'Meta', symbol: 'META', color: 'bg-gray-800', volume: 200000, industry: 'Tech', total_ESG_grade: 'BB', total_esg_value: 85 },
+    // { name: 'AMD', symbol: 'AMD', color: 'bg-gray-800', volume: 175000, industry: 'Tech', total_ESG_grade: 'B', total_esg_value: 80 },
+    // { name: 'Micron', symbol: 'MU', color: 'bg-gray-800', volume: 80000, industry: 'Tech', total_ESG_grade: 'AA', total_esg_value: 82 },
+    // { name: 'Crowd', symbol: 'CRWD', color: 'bg-gray-800', volume: 90000, industry: 'Tech', total_ESG_grade: 'A', total_esg_value: 88 },
   ];
 
   useEffect(() => {
@@ -142,7 +142,7 @@ const Dashboard = () => {
             <StockChart symbol={selectedStock} />
           </div>
           {/* ESG Recommendations */}
-          <div className="mt-4">
+          {/* <div className="mt-4">
             <h2 className="text-lg font-semibold mb-2">ESG Improvement Recommendations</h2>
             <ul>
               {recommendations.map(stock => (
@@ -156,7 +156,7 @@ const Dashboard = () => {
                 </li>
               ))}
             </ul>
-          </div>
+          </div> */}
           {/* Potential Stocks */}
           <div className="mt-4">
             <h2 className="text-lg font-semibold mb-2">Potential Stocks</h2>

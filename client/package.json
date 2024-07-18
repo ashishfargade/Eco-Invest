@@ -1,7 +1,10 @@
 {
   "name": "client",
   "private": true,
-  "proxy": ["http://localhost:8000","http://localhost:5000"],
+  "proxy": [
+    "http://localhost:8000",
+    "http://localhost:5000"
+  ],
   "version": "0.0.0",
   "type": "module",
   "scripts": {
@@ -12,6 +15,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.6",
+    "axios": "^1.7.2",
     "chart.js": "^4.4.3",
     "fusioncharts": "^4.0.2",
     "react": "^18.3.1",

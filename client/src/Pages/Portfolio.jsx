@@ -7,7 +7,7 @@ const Portfolio = () => {
   ]);
   const [selectedStock, setSelectedStock] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
-  const [newStock, setNewStock] = useState({ name: '', ticker: '', price: '', volume: '', dateBought: '', currentPrice: '' });
+  const [newStock, setNewStock] = useState({ name: '', ticker: '', volume: ''});
 
   const handleStockClick = (stock) => {
     setSelectedStock(stock);
@@ -80,41 +80,11 @@ const Portfolio = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-gray-700">Buy Price</label>
-                <input
-                  type="number"
-                  name="price"
-                  value={newStock.price}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                />
-              </div>
-              <div className="mb-4">
                 <label className="block text-gray-700">Volume</label>
                 <input
                   type="number"
                   name="volume"
                   value={newStock.volume}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700">Date Bought</label>
-                <input
-                  type="date"
-                  name="dateBought"
-                  value={newStock.dateBought}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700">Current Price</label>
-                <input
-                  type="number"
-                  name="currentPrice"
-                  value={newStock.currentPrice}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
                 />
