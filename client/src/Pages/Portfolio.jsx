@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
-import axios from 'axios'; // Import Axios for making HTTP requests
 import { useSelector } from 'react-redux';
 
 const Portfolio = () => {
   const [stocks, setStocks] = useState([]);
-
   const token = useSelector((state) => state.auth.token);
-
   const [selectedStock, setSelectedStock] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
   const [newStock, setNewStock] = useState({ name: '', ticker: '', volume: '' });
 
-  const putStock = async () => {
+  const handleSaveNewStock = async (ticker, name, volume) => {
     try {
       const response = await fetch("http://localhost:8000/api/userStock/userownedstock", {
         method: 'PUT',
@@ -20,11 +17,22 @@ const Portfolio = () => {
           'x-auth-token': token
         },
         credentials: 'include',
+        body: JSON.stringify({ ticker, name, volume })
       });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Updated owned stocks:', data);
+        // Optionally handle the updated stocks data
+        setStocks(data); // Update the state with the new stock data
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to update owned stocks:', errorData);
+      }
     } catch (err) {
-      
+      console.error('Error updating owned stocks:', err);
     }
-  }
+  };
 
   const handleStockClick = (stock) => {
     setSelectedStock(stock);
@@ -41,12 +49,10 @@ const Portfolio = () => {
     setNewStock({ ...newStock, [name]: value });
   };
 
-  const handleSaveNewStock = async () => {
-    try {
-     
-    } catch (error) {
-      
-    }
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    handleSaveNewStock(newStock.ticker, newStock.name, newStock.volume);
+    setNewStock({ name: '', ticker: '', volume: '' }); // Reset the form
   };
 
   const calculatePrice = (price, volume) => (price * volume).toFixed(2);
@@ -77,7 +83,7 @@ const Portfolio = () => {
         {isAdding ? (
           <div>
             <h2 className="text-lg font-semibold mb-4 text-blue-600">Add New Stock</h2>
-            <form>
+            <form onSubmit={handleFormSubmit}>
               <div className="mb-4">
                 <label className="block text-gray-700">Stock Name</label>
                 <input
@@ -109,8 +115,7 @@ const Portfolio = () => {
                 />
               </div>
               <button
-                type="button"
-                onClick={handleSaveNewStock}
+                type="submit"
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
               >
                 Save
