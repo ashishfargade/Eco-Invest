@@ -16,6 +16,8 @@ const Dashboard = () => {
   const [potentialStocks, setPotentialStocks] = useState([]);
   const [stockss, setStockss] = useState([]);
   const [tickerVolumePairs, setTickerVolumePairs] = useState([]);
+  const [submittedStocks, setSubmittedStocks] = useState([]);
+  const [showModal, setShowModal] = useState(false);
 
   const handleLogout = () => {
     dispatch(logout()); // Clear the authentication state
@@ -76,7 +78,7 @@ const Dashboard = () => {
   };
 
   const getBoxSize = (volume) => {
-    const maxVolume = Math.max(...stocks.map(stock => stock.volume));
+    const maxVolume = Math.max(...stockss.map(stock => stock.volume));
     return `h-${Math.floor((volume / maxVolume) * 20) + 10} w-${Math.floor((volume / maxVolume) * 20) + 10}`;
   };
 
@@ -105,23 +107,27 @@ const Dashboard = () => {
       const data = await response.json();
       console.log('Submitted potential stocks:', data);
 
-      // Optionally handle response or navigate to another page
+      // Extract predictions array from the response
+      if (data && Array.isArray(data.predictions)) {
+        setSubmittedStocks(data.predictions);
+        setShowModal(true); // Show the modal
+      } else {
+        console.error('Unexpected response format:', data);
+      }
     } catch (error) {
       console.error('Error submitting potential stocks:', error);
     }
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
   };
 
   return (
     <div className="flex h-screen p-4 bg-white">
       <div className="w-3/5 p-4">
         <h1 className="text-3xl font-semibold mb-4">Evaluation</h1>
-        <div className={`text-5xl font-bold ${performance.trend === 'negative' ? 'text-red-600' : ''}`}>
-          $49,825.82{' '}
-          <span className={`text-${performance.trend === 'positive' ? 'green' : performance.trend === 'negative' ? 'red' : 'gray'}-600 text-xl`}>
-            {performance.trend === 'positive' ? '▲' : performance.trend === 'negative' ? '▼' : ''}
-            {performance.change.toFixed(2)}% ${performance.amount.toFixed(2)}
-          </span>
-        </div>
+        
         <div className="text-gray-600">
           {performance.trend === 'positive'
             ? 'Strong performance 💪'
@@ -188,6 +194,27 @@ const Dashboard = () => {
       >
         Logout
       </button>
+
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg w-3/4 max-h-screen overflow-y-auto">
+            <h2 className="text-xl font-semibold mb-4">Submitted Stock Scores</h2>
+            <button
+              onClick={closeModal}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+            >
+              &times;
+            </button>
+            {submittedStocks.map((stock, index) => (
+              <div key={index} className="p-4 mb-4 bg-gray-100 rounded-lg">
+                <h3 className="text-xl font-semibold">{stock.name}</h3>
+                <img src={stock.logo} alt={stock.name} className="w-16 h-16 mb-2" />
+                <pre>{JSON.stringify(stock, null, 2)}</pre>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
