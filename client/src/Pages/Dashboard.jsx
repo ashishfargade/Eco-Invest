@@ -45,19 +45,20 @@ const Dashboard = () => {
     }
 
     // Fetch ESG recommendations
-    fetchRecommendations();
+    // fetchRecommendations();
 
   }, [stocks]);
 
-  const fetchRecommendations = async () => {
-    try {
-      const response = await fetch('/api/esg-recommendations');
-      const data = await response.json();
-      setRecommendations(data);
-    } catch (error) {
-      console.error('Error fetching ESG recommendations:', error);
-    }
-  };
+  // const fetchRecommendations = async () => {
+
+  //   try {
+  //     const response = await fetch('/api/esg-recommendations');
+  //     const data = await response.json();
+  //     setRecommendations(data);
+  //   } catch (error) {
+  //     console.error('Error fetching ESG recommendations:', error);
+  //   }
+  // };
 
   const handleStockClick = (symbol) => {
     setSelectedStock(symbol);
