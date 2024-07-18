@@ -3,65 +3,57 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../authSlice';
 import StockChart from '../components/StockChart';
-import { useSelector } from 'react-redux';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const token = useSelector((state) => state.auth.token);
+
   const [selectedStock, setSelectedStock] = useState('IBM');
   const [bgColor, setBgColor] = useState('bg-black-500');
   const [performance, setPerformance] = useState({ change: 0, amount: 0, trend: 'neutral' });
-  const [recommendations, setRecommendations] = useState([]);
+  const [newStock, setNewStock] = useState('');
+  const [potentialStocks, setPotentialStocks] = useState([]);
+  const [stockss, setStockss] = useState([]);
+  const [tickerVolumePairs, setTickerVolumePairs] = useState([]);
 
   const handleLogout = () => {
     dispatch(logout()); // Clear the authentication state
     navigate('/login'); // Redirect to the login page
   };
 
-  const stocks = [
-    { name: 'IBM', symbol: 'IBM', color: 'bg-gray-800', volume: 250000},
-    { name: 'Microsoft', symbol: 'MSFT', color: 'bg-gray-800', volume: 300000},
-    { name: 'Google', symbol: 'GOOGL', color: 'bg-gray-800', volume: 150000},
-    { name: 'Nvidia', symbol: 'NVDA', color: 'bg-gray-800', volume: 100000},
-    { name: 'Meta', symbol: 'META', color: 'bg-gray-800', volume: 200000},
-    { name: 'AMD', symbol: 'AMD', color: 'bg-gray-800', volume: 175000},
-    { name: 'Micron', symbol: 'MU', color: 'bg-gray-800', volume: 80000},
-    { name: 'Crowd', symbol: 'CRWD', color: 'bg-gray-800', volume: 90000},
-  ];
-
-  useEffect(() => {
-    const calculateESGValue = () => {
-      const totalESGValue = stocks.reduce((acc, stock) => acc + stock.total_esg_value, 0);
-      return totalESGValue / stocks.length;
-    };
-
-    const totalESGValue = calculateESGValue();
-
-    if (totalESGValue >= 80) {
-      setBgColor('bg-green-400');
-    } else if (totalESGValue >= 40) {
-      setBgColor('bg-yellow-100');
-    } else {
-      setBgColor('bg-red-100');
-    }
-
-    // Fetch ESG recommendations
-    fetchRecommendations();
-
-  }, [stocks]);
-
-  const fetchRecommendations = async () => {
+  const fetchStocks = async () => {
     try {
-      const response = await fetch('/api/esg-recommendations');
-      const data = await response.json();
-      setRecommendations(data);
+      const response = await fetch('http://localhost:8000/api/userStock/userownedstock', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data); // Log the full response to the console
+        setStockss(data);
+        const pairs = data.map(stock => [stock.ticker, stock.volume]);
+        setTickerVolumePairs(pairs);
+        console.log(pairs); // Log the ticker-volume pairs to the console
+      } else {
+        console.error('Failed to fetch stocks');
+      }
     } catch (error) {
-      console.error('Error fetching ESG recommendations:', error);
+      console.error('Error fetching stocks:', error);
     }
   };
 
+  useEffect(() => {
+    fetchStocks();
+  }, []);
+
   const handleStockClick = (symbol) => {
-    setSelectedStock(symbol);
+    setSelectedStock(symbol.toUpperCase());
   };
 
   const updatePerformance = async (symbol) => {
@@ -96,12 +88,10 @@ const Dashboard = () => {
   };
 
   const handleSubmitPotentialStocks = async () => {
-    console.log('Token:', token);
     const formattedStocks = potentialStocks.map(stock => ({
       "ticker": stock.toUpperCase()
     }));
-    console.log(formattedStocks);
-  
+
     try {
       const response = await fetch('http://localhost:8000/api/userStock/interestStocks', {
         method: 'POST',
@@ -111,16 +101,15 @@ const Dashboard = () => {
         },
         body: JSON.stringify({ "stocks": formattedStocks }),
       });
-  
+
       const data = await response.json();
       console.log('Submitted potential stocks:', data);
-  
+
       // Optionally handle response or navigate to another page
     } catch (error) {
       console.error('Error submitting potential stocks:', error);
     }
   };
-  
 
   return (
     <div className="flex h-screen p-4 bg-white">
@@ -181,18 +170,14 @@ const Dashboard = () => {
       <div className={`w-2/5 p-4 rounded-lg ${bgColor}`}>
         <h2 className="text-xl font-semibold mb-4">Allocation</h2>
         <div className="grid grid-cols-2 gap-4">
-          {stocks.map(stock => (
+          {tickerVolumePairs.map(([ticker, volume], index) => (
             <div
-              key={stock.symbol}
-              className={`p-4 ${selectedStock === stock.symbol ? 'bg-blue-600' : stock.color} rounded-lg text-white flex flex-col items-center cursor-pointer ${getBoxSize(stock.volume)}`}
-              onClick={() => handleStockClick(stock.symbol)}
+              key={index}
+              className="p-4 bg-gray-200 rounded-lg cursor-pointer hover:bg-gray-300"
+              onClick={() => handleStockClick(ticker)}
             >
-              <div className="flex items-center">
-                <span className="text-xl font-semibold">{stock.name}</span>
-                <span className="ml-2 text-sm">{stock.symbol}</span>
-              </div>
-              <div className="text-lg font-semibold mt-2">{stock.volume.toLocaleString()}</div>
-              <div className="text-sm mt-1">{stock.total_ESG_grade}</div>
+              <p className="font-bold">{ticker.toUpperCase()}</p>
+              <p>Volume: {volume}</p>
             </div>
           ))}
         </div>

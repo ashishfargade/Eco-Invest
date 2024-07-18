@@ -1,14 +1,30 @@
 import React, { useState } from 'react';
 import axios from 'axios'; // Import Axios for making HTTP requests
+import { useSelector } from 'react-redux';
 
 const Portfolio = () => {
-  const [stocks, setStocks] = useState([
-    { id: 1, name: 'IBM', ticker: 'IBM', price: 145, volume: 100, dateBought: '2023-01-10', currentPrice: 150 },
-    { id: 2, name: 'Microsoft', ticker: 'MSFT', price: 300, volume: 50, dateBought: '2023-02-15', currentPrice: 320 },
-  ]);
+  const [stocks, setStocks] = useState([]);
+
+  const token = useSelector((state) => state.auth.token);
+
   const [selectedStock, setSelectedStock] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
   const [newStock, setNewStock] = useState({ name: '', ticker: '', volume: '' });
+
+  const putStock = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/api/userStock/userownedstock", {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token
+        },
+        credentials: 'include',
+      });
+    } catch (err) {
+      
+    }
+  }
 
   const handleStockClick = (stock) => {
     setSelectedStock(stock);
@@ -27,15 +43,9 @@ const Portfolio = () => {
 
   const handleSaveNewStock = async () => {
     try {
-      // Make a PUT request to your backend endpoint
-      const response = await axios.put('/userownedstock', newStock);
-      const updatedStocks = response.data; // Assuming the backend returns updated list of stocks
-      setStocks(updatedStocks);
-      setNewStock({ name: '', ticker: '', volume: '' }); // Clear input fields after successful save
-      setIsAdding(false); // Hide the add new stock form
+     
     } catch (error) {
-      console.error('Error saving new stock:', error);
-      // Handle error appropriately, e.g., show error message to user
+      
     }
   };
 
