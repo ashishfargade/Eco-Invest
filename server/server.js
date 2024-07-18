@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors({
     origin: 'http://localhost:5173', // Replace with your frontend URL
     methods: 'GET,POST',
-    allowedHeaders: 'Content-Type,Authorization',
+    allowedHeaders: 'Content-Type, x-auth-token',
     credentials : true
 }));
 
