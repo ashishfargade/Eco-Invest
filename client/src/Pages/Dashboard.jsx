@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { logout } from '../authSlice';
 import StockChart from '../components/StockChart';
 
@@ -50,7 +51,8 @@ const Dashboard = () => {
   }, [stocks]);
 
   // const fetchRecommendations = async () => {
-
+  //   e.preventDefault();
+    
   //   try {
   //     const response = await fetch('/api/esg-recommendations');
   //     const data = await response.json();
