@@ -102,7 +102,7 @@ const Dashboard = () => {
   const handleSubmitPotentialStocks = async () => {
     try {
       //to flask server
-      const response = await fetch('http://localhost:5000/api/getmetrics', {
+      const response = await fetch('http://localhost:8000/api/getmetrics', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
