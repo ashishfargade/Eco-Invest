@@ -17,12 +17,13 @@ const Navbar = () => {
         <nav className="bg-gray-800 p-4 sticky top-0 z-50">
             <div className="container mx-auto flex justify-between items-center">
                 <div className="navbar-left">
-                    <img src="your-image-url.jpg" alt="Logo" className="h-10 w-auto" />
+                    <img src={Logo} alt="Logo" className="h-10 w-auto" />
                 </div>
                 <div className="hidden md:flex space-x-4">
                     <Link to="/" className="text-white hover:text-blue-300">Home</Link>
                     <Link to="/dashboard" className="text-white hover:text-gray-300">Dashboard</Link>
-                    <Link to="/esg" className="text-white hover:text-gray-300">What is ESG</Link>
+                    {/* <Link to="/esg" className="text-white hover:text-gray-300">What is ESG</Link> */}
+                    <Link to="/trends" className="text-white hover:text-gray-300">Latest Trends</Link>
                     {location.pathname === '/dashboard' && (
                         <Link to="/edit-portfolio" className="text-white hover:text-gray-300">Edit Portfolio</Link>
                     )}
