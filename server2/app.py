@@ -26,6 +26,7 @@ def home():
 @app.route('/api/data/userholdings', methods=['POST'])
 def update_user_holdings():
     global ownedStocks
+    ownedStocks = {}  # Reset to null before adding new data
     data = request.json
     if 'stocks' in data:
         ownedStocks = {stock['ticker']: stock['volume'] for stock in data['stocks']}
@@ -36,7 +37,11 @@ def update_user_holdings():
 # Get Metrics by POST of interested stocks
 @app.route('/api/getmetrics', methods=['POST'])
 def api_home():
-    global interestStocks
+    global interestStocks, stocks_history_data, news_data
+    interestStocks = []  # Reset to null before adding new data
+    stocks_history_data = {}  # Reset to null before adding new data
+    news_data = {}  # Reset to null before adding new data
+
     data = request.json
     if 'stocks' in data:
         interestStocks = data['stocks']

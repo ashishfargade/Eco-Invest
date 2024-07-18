@@ -2,3 +2,5 @@
 node_modules
 server\.env
 .env
+/server2/dataset/company_data.json
+/server2/dataset/news_data.json
