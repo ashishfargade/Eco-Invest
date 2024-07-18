@@ -4,9 +4,11 @@ import requests
 import numpy as np
 import pandas as pd
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from model import preprocess_esg_data, preprocess_sentiment_data, preprocess_time_series_data, feature_engineering, train_model, predict_investments
 
 app = Flask(__name__)
+CORS(app)
 
 alphaVantageKey = os.getenv("ALPHA_VANTAGE_KEY")
 esg_data = pd.read_csv('./dataset/esg_data.csv')
@@ -26,6 +28,7 @@ def home():
 @app.route('/api/data/userholdings', methods=['POST'])
 def update_user_holdings():
     global ownedStocks
+    ownedStocks = {}  # Reset to null before adding new data
     data = request.json
     if 'stocks' in data:
         ownedStocks = {stock['ticker']: stock['volume'] for stock in data['stocks']}
@@ -36,7 +39,11 @@ def update_user_holdings():
 # Get Metrics by POST of interested stocks
 @app.route('/api/getmetrics', methods=['POST'])
 def api_home():
-    global interestStocks
+    global interestStocks, stocks_history_data, news_data
+    interestStocks = []  # Reset to null before adding new data
+    stocks_history_data = {}  # Reset to null before adding new data
+    news_data = {}  # Reset to null before adding new data
+
     data = request.json
     if 'stocks' in data:
         interestStocks = data['stocks']
@@ -62,7 +69,8 @@ def api_home():
     with open('news_data.json', 'w') as news_file:
         json.dump(news_data, news_file)
 
-    return jsonify({"stocks_history_data": stocks_history_data, "news_data": news_data})
+    # return jsonify({"stocks_history_data": stocks_history_data, "news_data": news_data})
+    return jsonify({"message": "Time Series and News saved! You can predict now!"}), 200
 
 # Predict investments recommendations
 @app.route('/api/predict', methods=['GET'])

@@ -13,8 +13,7 @@ router.put("/", [
     [
         check('ticker', 'Ticker is required').not().isEmpty(),
         check('name', 'Name is required').not().isEmpty(),
-        check('volume', 'Volume is required').isInt().not().isEmpty(),
-        check('dateBought', 'Date is required and should be at least a day old').isISO8601().toDate().not().isEmpty(),
+        check('volume', 'Volume is required').isInt().not().isEmpty()
     ]
 ], 
 async (req, res) => {
@@ -23,7 +22,7 @@ async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    let { ticker, name, volume, dateBought } = req.body;
+    let { ticker, name, volume } = req.body;
     ticker = ticker.toLowerCase();
 
     try {
@@ -39,21 +38,24 @@ async (req, res) => {
             return res.status(404).json({ msg: "Stock not found in general stock collection" });
         }
 
-        // Fetching stock price by volume and date
-        let perPrice = await getStockPrice(ticker, dateBought);
+        // Fetching per stock price here
+        // const perStockPrice = await getStockPrice(ticker);
 
-        let valueAtPurchase = perPrice*volume;
-
-
-        const newStock = {
-            ticker,
-            name,
-            volume,
-            valueAtPurchase,
-            dateBought
-        };
-
-        user.ownedStocks.push(newStock);
+        // Check if the stock already exists in the user's ownedStocks
+        const existingStockIndex = user.ownedStocks.findIndex(s => s.ticker === ticker);
+        
+        if (existingStockIndex !== -1) {
+            // Stock exists, update the volume and current valuation
+            user.ownedStocks[existingStockIndex].volume += volume;
+        } else {
+            // Stock does not exist, add new stock
+            const newStock = {
+                ticker,
+                name,
+                volume
+            };
+            user.ownedStocks.push(newStock);
+        }
 
         // Save the updated user document
         await user.save();

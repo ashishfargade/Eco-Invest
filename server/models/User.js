@@ -13,16 +13,6 @@ const UserStockSchema = new mongoose.Schema({
     volume: {
         type: Number,
         required: true
-    },
-    valueAtPurchase: {
-        type: Number,
-    },
-    currentValue: {
-        type: Number,
-    },
-    dateBought: {
-        type: Date,
-        default: Date.now
     }
 });
 
@@ -47,7 +37,7 @@ const UserSchema = mongoose.Schema({
         default: Date.now
     },
     ownedStocks: [UserStockSchema],
-    intrestStocks: [UserStockSchema]
+    // interestStocks: [UserStockSchema]
 })
 
 const User = mongoose.model('UserSchema', UserSchema);
