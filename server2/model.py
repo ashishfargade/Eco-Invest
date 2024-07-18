@@ -17,8 +17,11 @@ def preprocess_sentiment_data(news_data):
     # Preprocessing News sentiment data
     sentiment_scores = {}
     for company, data in news_data.items():
-        sentiments = [article['overall_sentiment_score'] for article in data['feed']]
-        sentiment_scores[company] = np.mean(sentiments) if sentiments else 0
+        if 'feed' in data:
+            sentiments = [article['overall_sentiment_score'] for article in data['feed']]
+            sentiment_scores[company] = np.mean(sentiments) if sentiments else 0
+        else:
+            sentiment_scores[company] = 0
     return pd.DataFrame(list(sentiment_scores.items()), columns=['Company', 'SentimentScore'])
 
 def preprocess_time_series_data(company_data):

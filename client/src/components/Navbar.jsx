@@ -1,10 +1,17 @@
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import Logo from '../assets/logo.png';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../authSlice';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const location = useLocation(); // Get the current route
+    const location = useLocation();
+    const dispatch = useDispatch();
+    const user = useSelector(state => state.auth.user);
+
+    const handleLogout = () => {
+        dispatch(logout());
+    };
 
     return (
         <nav className="bg-gray-800 p-4 sticky top-0 z-50">
@@ -19,6 +26,14 @@ const Navbar = () => {
                     <Link to="/trends" className="text-white hover:text-gray-300">Latest Trends</Link>
                     {location.pathname === '/dashboard' && (
                         <Link to="/edit-portfolio" className="text-white hover:text-gray-300">Edit Portfolio</Link>
+                    )}
+                    {user && (
+                        <button
+                            onClick={handleLogout}
+                            className="text-white hover:text-red-300"
+                        >
+                            Logout
+                        </button>
                     )}
                 </div>
                 <div className="md:hidden">
@@ -37,6 +52,14 @@ const Navbar = () => {
                     <Link to="/contact" className="block text-white hover:text-gray-300">Contact</Link>
                     {location.pathname === '/dashboard' && (
                         <Link to="/edit-portfolio" className="block text-white hover:text-gray-300">Edit Portfolio</Link>
+                    )}
+                    {user && (
+                        <button
+                            onClick={handleLogout}
+                            className="block text-white hover:text-red-300"
+                        >
+                            Logout
+                        </button>
                     )}
                 </div>
             )}
