@@ -11,12 +11,12 @@ const authSlice = createSlice({
     login: (state, action) => {
       state.isAuthenticated = true;
       state.token = action.payload;
-      localStorage.setItem('token', action.payload); // Save token to local storage
+      localStorage.setItem('x-auth-token', action.payload); // Save token to local storage
     },
     logout: (state) => {
       state.isAuthenticated = false;
       state.token = null;
-      localStorage.removeItem('token'); // Remove token from local storage
+      localStorage.removeItem('x-auth-token'); // Remove token from local storage
     },
   },
 });

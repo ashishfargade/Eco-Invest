@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../authSlice';
 import StockChart from '../components/StockChart';
@@ -11,46 +11,22 @@ const Dashboard = () => {
   const [bgColor, setBgColor] = useState('bg-black-500');
   const [performance, setPerformance] = useState({ change: 0, amount: 0, trend: 'neutral' });
   const [recommendations, setRecommendations] = useState([]);
-  const [potentialStocks, setPotentialStocks] = useState([]);
-  const [newStock, setNewStock] = useState('');
-  const [stocks, setStocks] = useState([]); // State to store the fetched stocks
 
-  const token = useSelector((state) => state.auth.token);
-
-  // Logout Function
   const handleLogout = () => {
-    dispatch(logout());
-    navigate('/login');
+    dispatch(logout()); // Clear the authentication state
+    navigate('/login'); // Redirect to the login page
   };
 
-  // User data mock
-  const user = { name: 'Ashish Sanjay Fargade' };
-
-  useEffect(() => {
-    const fetchStocks = async () => {
-      console.log(token);
-      try {
-        const response = await fetch('http://localhost:8000/api/userStock/userownedstock', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-auth-token': `Bearer ${token}`
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setStocks(data); // Set the fetched data to the stocks state
-        } else {
-          console.error('Failed to fetch stocks:', response.statusText);
-        }
-      } catch (error) {
-        console.error('Error fetching stocks:', error);
-      }
-    };
-
-    fetchStocks();
-  }, [token]);
+  const stocks = [
+    { name: 'IBM', symbol: 'IBM', color: 'bg-gray-800', volume: 250000},
+    { name: 'Microsoft', symbol: 'MSFT', color: 'bg-gray-800', volume: 300000},
+    { name: 'Google', symbol: 'GOOGL', color: 'bg-gray-800', volume: 150000},
+    { name: 'Nvidia', symbol: 'NVDA', color: 'bg-gray-800', volume: 100000},
+    { name: 'Meta', symbol: 'META', color: 'bg-gray-800', volume: 200000},
+    { name: 'AMD', symbol: 'AMD', color: 'bg-gray-800', volume: 175000},
+    { name: 'Micron', symbol: 'MU', color: 'bg-gray-800', volume: 80000},
+    { name: 'Crowd', symbol: 'CRWD', color: 'bg-gray-800', volume: 90000},
+  ];
 
   useEffect(() => {
     const calculateESGValue = () => {
@@ -69,21 +45,19 @@ const Dashboard = () => {
     }
 
     // Fetch ESG recommendations
-    // fetchRecommendations();
+    fetchRecommendations();
 
   }, [stocks]);
 
-  // const fetchRecommendations = async () => {
-  //   e.preventDefault();
-    
-  //   try {
-  //     const response = await fetch('/api/esg-recommendations');
-  //     const data = await response.json();
-  //     setRecommendations(data);
-  //   } catch (error) {
-  //     console.error('Error fetching ESG recommendations:', error);
-  //   }
-  // };
+  const fetchRecommendations = async () => {
+    try {
+      const response = await fetch('/api/esg-recommendations');
+      const data = await response.json();
+      setRecommendations(data);
+    } catch (error) {
+      console.error('Error fetching ESG recommendations:', error);
+    }
+  };
 
   const handleStockClick = (symbol) => {
     setSelectedStock(symbol);
@@ -114,122 +88,55 @@ const Dashboard = () => {
     return `h-${Math.floor((volume / maxVolume) * 20) + 10} w-${Math.floor((volume / maxVolume) * 20) + 10}`;
   };
 
-  const handleAddPotentialStock = () => {
-    if (newStock && !potentialStocks.includes(newStock)) {
-      setPotentialStocks([...potentialStocks, newStock]);
-      setNewStock('');
-    }
-  };
-
-  const handleSubmitPotentialStocks = async () => {
-    const formattedStocks = potentialStocks.map(stock => ({
-      ticker: stock.toUpperCase()
-    }));
-    try {
-      //to flask server
-      const response = await fetch('http://localhost:8000/api/userStock/interestStocks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': `Bearer ${token}`
-        },
-        body: JSON.stringify({ stocks: formattedStocks }),
-      });
-
-      const data = await response.json();
-      console.log('Submitted potential stocks:', data);
-    } catch (error) {
-      console.error('Error submitting potential stocks:', error);
-    }
-  };
-
   return (
-    <div className="flex flex-col h-screen p-4 bg-white text-sm">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-semibold">Evaluation</h1>
-        <div className="text-gray-700">{user.name}</div>
-        {/* Logout Button */}
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-        >
-          Logout
-        </button>
-      </div>
-      <div className="flex">
-        <div className="w-3/5 p-4">
-          <div className={`text-3xl font-bold ${performance.trend === 'negative' ? 'text-red-600' : ''}`}>
-            $49,825.82{' '}
-            <span className={`text-${performance.trend === 'positive' ? 'green' : performance.trend === 'negative' ? 'red' : 'gray'}-600 text-xl`}>
-              {performance.trend === 'positive' ? '▲' : performance.trend === 'negative' ? '▼' : ''}
-              {performance.change.toFixed(2)}% ${performance.amount.toFixed(2)}
-            </span>
-          </div>
-          <div className="text-gray-600">
-            {performance.trend === 'positive'
-              ? 'Strong performance 💪'
-              : performance.trend === 'negative'
-              ? 'Needs Improvement 😟'
-              : 'Neutral Performance 😐'}
-          </div>
-          <div className="mt-4">
-            <StockChart symbol={selectedStock} />
-          </div>
-          <div className="mt-4">
-            <h2 className="text-lg font-semibold mb-2">Potential Stocks</h2>
-            <div className="mb-2">
-              <input
-                type="text"
-                value={newStock}
-                onChange={e => setNewStock(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                placeholder="Enter stock name"
-              />
-              <button
-                onClick={handleAddPotentialStock}
-                className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Add Stock
-              </button>
-            </div>
-            <ul className="flex space-x-2">
-              {potentialStocks.map((stock, index) => (
-                <li key={index} className="p-2 bg-gray-200 rounded-lg">
-                  {stock}
-                </li>
-              ))}
-            </ul>
-
-            <button
-              onClick={handleSubmitPotentialStocks}
-              className="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-            >
-              Submit Potential Stocks
-            </button>
-          </div>
+    <div className="flex h-screen p-4 bg-white">
+      <div className="w-3/5 p-4">
+        <h1 className="text-3xl font-semibold mb-4">Evaluation</h1>
+        <div className={`text-5xl font-bold ${performance.trend === 'negative' ? 'text-red-600' : ''}`}>$49,825.82 <span className={`text-${performance.trend === 'positive' ? 'green' : performance.trend === 'negative' ? 'red' : 'gray'}-600 text-xl`}>{performance.trend === 'positive' ? '▲' : performance.trend === 'negative' ? '▼' : ''}{performance.change.toFixed(2)}% ${performance.amount.toFixed(2)}</span></div>
+        <div className="text-gray-600">{performance.trend === 'positive' ? 'Strong performance 💪' : performance.trend === 'negative' ? 'Needs Improvement 😟' : 'Neutral Performance 😐'}</div>
+        <div className="mt-6">
+          <StockChart symbol={selectedStock} />
         </div>
-        <div className={`w-2/5 p-4 rounded-lg ${bgColor}`}>
-          <h2 className="text-lg font-semibold mb-2">Allocation</h2>
-          <div className="grid grid-cols-2 gap-4">
-            {stocks.map(stock => (
-              <div
-                key={stock.symbol}
-                className={`p-4 ${selectedStock === stock.symbol ? 'bg-blue-600' : stock.color} rounded-lg text-white flex flex-col items-center cursor-pointer ${getBoxSize(
-                  stock.volume
-                )}`}
-                onClick={() => handleStockClick(stock.symbol)}
-              >
-                <div className="flex items-center">
-                  <span className="text-xl font-semibold">{stock.name}</span>
-                  <span className="ml-2 text-sm">{stock.symbol}</span>
+        {/* ESG Recommendations */}
+        <div className="mt-6">
+          <h2 className="text-xl font-semibold mb-4">ESG Improvement Recommendations</h2>
+          <ul>
+            {recommendations.map(stock => (
+              <li key={stock.symbol} className="mb-2">
+                <div className="flex justify-between items-center">
+                  <span>{stock.name} ({stock.symbol})</span>
+                  <span className="text-green-600">{stock.recommendation}</span>
                 </div>
-                <div className="text-lg font-semibold mt-2">{stock.volume.toLocaleString()}</div>
-                <div className="text-sm mt-1">{stock.total_ESG_grade}</div>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </div>
+      <div className={`w-2/5 p-4 rounded-lg ${bgColor}`}>
+        <h2 className="text-xl font-semibold mb-4">Allocation</h2>
+        <div className="grid grid-cols-2 gap-4">
+          {stocks.map(stock => (
+            <div
+              key={stock.symbol}
+              className={`p-4 ${selectedStock === stock.symbol ? 'bg-blue-600' : stock.color} rounded-lg text-white flex flex-col items-center cursor-pointer ${getBoxSize(stock.volume)}`}
+              onClick={() => handleStockClick(stock.symbol)}
+            >
+              <div className="flex items-center">
+                <span className="text-xl font-semibold">{stock.name}</span>
+                <span className="ml-2 text-sm">{stock.symbol}</span>
+              </div>
+              <div className="text-lg font-semibold mt-2">{stock.volume.toLocaleString()}</div>
+              <div className="text-sm mt-1">{stock.total_ESG_grade}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <button
+        onClick={handleLogout}
+        className="mt-4 px-4 py-2 bg-red-600 text-white rounded absolute top-4 right-4"
+      >
+        Logout
+      </button>
     </div>
   );
 };
