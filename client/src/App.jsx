@@ -11,6 +11,8 @@ import Login from './Pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import Signup from './Pages/Signup';
 import Portfolio from  './Pages/Portfolio';
+import Trends from  './Pages/Trends';
+
 
 
 function App() {
@@ -24,6 +26,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/esg" element={<ESG />} />
+            <Route path="/trends" element={<Trends />} />
             <Route path="/edit-portfolio" element={<Portfolio />} />
             <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
           </Routes>
