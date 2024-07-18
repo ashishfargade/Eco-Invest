@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import { logout } from '../authSlice';
 import StockChart from '../components/StockChart';
 
@@ -14,6 +13,9 @@ const Dashboard = () => {
   const [recommendations, setRecommendations] = useState([]);
   const [potentialStocks, setPotentialStocks] = useState([]);
   const [newStock, setNewStock] = useState('');
+  const [stocks, setStocks] = useState([]); // State to store the fetched stocks
+
+  const token = useSelector((state) => state.auth.token);
 
   // Logout Function
   const handleLogout = () => {
@@ -24,10 +26,31 @@ const Dashboard = () => {
   // User data mock
   const user = { name: 'Ashish Sanjay Fargade' };
 
-  // Stocks mock data
-  const stocks = [
-    // Your stock data here
-  ];
+  useEffect(() => {
+    const fetchStocks = async () => {
+      console.log(token);
+      try {
+        const response = await fetch('http://localhost:8000/api/userStock/userownedstock', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-auth-token': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setStocks(data); // Set the fetched data to the stocks state
+        } else {
+          console.error('Failed to fetch stocks:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching stocks:', error);
+      }
+    };
+
+    fetchStocks();
+  }, [token]);
 
   useEffect(() => {
     const calculateESGValue = () => {
@@ -108,7 +131,7 @@ const Dashboard = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          
+          'x-auth-token': `Bearer ${token}`
         },
         body: JSON.stringify({ stocks: formattedStocks }),
       });
@@ -152,23 +175,6 @@ const Dashboard = () => {
           <div className="mt-4">
             <StockChart symbol={selectedStock} />
           </div>
-          {/* ESG Recommendations */}
-          {/* <div className="mt-4">
-            <h2 className="text-lg font-semibold mb-2">ESG Improvement Recommendations</h2>
-            <ul>
-              {recommendations.map(stock => (
-                <li key={stock.symbol} className="mb-2">
-                  <div className="flex justify-between items-center">
-                    <span>
-                      {stock.name} ({stock.symbol})
-                    </span>
-                    <span className="text-green-600">{stock.recommendation}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div> */}
-          {/* Potential Stocks */}
           <div className="mt-4">
             <h2 className="text-lg font-semibold mb-2">Potential Stocks</h2>
             <div className="mb-2">
