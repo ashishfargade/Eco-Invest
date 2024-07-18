@@ -11,11 +11,15 @@ const Dashboard = () => {
   const [bgColor, setBgColor] = useState('bg-black-500');
   const [performance, setPerformance] = useState({ change: 0, amount: 0, trend: 'neutral' });
   const [recommendations, setRecommendations] = useState([]);
+  const [potentialStocks, setPotentialStocks] = useState([]);
+  const [newStock, setNewStock] = useState('');
 
   const handleLogout = () => {
-    dispatch(logout()); // Clear the authentication state
-    navigate('/login'); // Redirect to the login page
+    dispatch(logout());
+    navigate('/login');
   };
+
+  const user = { name: 'Ashish Sanjay Fargade' };
 
   const stocks = [
     { name: 'IBM', symbol: 'IBM', color: 'bg-gray-800', volume: 250000, industry: 'Tech', total_ESG_grade: 'A', total_esg_value: 90 },
@@ -88,55 +92,127 @@ const Dashboard = () => {
     return `h-${Math.floor((volume / maxVolume) * 20) + 10} w-${Math.floor((volume / maxVolume) * 20) + 10}`;
   };
 
+  const handleAddPotentialStock = () => {
+    if (newStock && !potentialStocks.includes(newStock)) {
+      setPotentialStocks([...potentialStocks, newStock]);
+      setNewStock('');
+    }
+  };
+
+  const handleSubmitPotentialStocks = async () => {
+    try {
+      //to flask server
+      const response = await fetch('http://localhost:5000/api/getmetrics', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ potentialStocks }),
+      });
+      const data = await response.json();
+      console.log('Submitted potential stocks:', data);
+    } catch (error) {
+      console.error('Error submitting potential stocks:', error);
+    }
+  };
+
   return (
-    <div className="flex h-screen p-4 bg-white">
-      <div className="w-3/5 p-4">
-        <h1 className="text-3xl font-semibold mb-4">Evaluation</h1>
-        <div className={`text-5xl font-bold ${performance.trend === 'negative' ? 'text-red-600' : ''}`}>$49,825.82 <span className={`text-${performance.trend === 'positive' ? 'green' : performance.trend === 'negative' ? 'red' : 'gray'}-600 text-xl`}>{performance.trend === 'positive' ? '▲' : performance.trend === 'negative' ? '▼' : ''}{performance.change.toFixed(2)}% ${performance.amount.toFixed(2)}</span></div>
-        <div className="text-gray-600">{performance.trend === 'positive' ? 'Strong performance 💪' : performance.trend === 'negative' ? 'Needs Improvement 😟' : 'Neutral Performance 😐'}</div>
-        <div className="mt-6">
-          <StockChart symbol={selectedStock} />
-        </div>
-        {/* ESG Recommendations */}
-        <div className="mt-6">
-          <h2 className="text-xl font-semibold mb-4">ESG Improvement Recommendations</h2>
-          <ul>
-            {recommendations.map(stock => (
-              <li key={stock.symbol} className="mb-2">
-                <div className="flex justify-between items-center">
-                  <span>{stock.name} ({stock.symbol})</span>
-                  <span className="text-green-600">{stock.recommendation}</span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+    <div className="flex flex-col h-screen p-4 bg-white text-sm">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-semibold">Evaluation</h1>
+        <div className="text-gray-700">{user.name}</div>
       </div>
-      <div className={`w-2/5 p-4 rounded-lg ${bgColor}`}>
-        <h2 className="text-xl font-semibold mb-4">Allocation</h2>
-        <div className="grid grid-cols-2 gap-4">
-          {stocks.map(stock => (
-            <div
-              key={stock.symbol}
-              className={`p-4 ${selectedStock === stock.symbol ? 'bg-blue-600' : stock.color} rounded-lg text-white flex flex-col items-center cursor-pointer ${getBoxSize(stock.volume)}`}
-              onClick={() => handleStockClick(stock.symbol)}
-            >
-              <div className="flex items-center">
-                <span className="text-xl font-semibold">{stock.name}</span>
-                <span className="ml-2 text-sm">{stock.symbol}</span>
-              </div>
-              <div className="text-lg font-semibold mt-2">{stock.volume.toLocaleString()}</div>
-              <div className="text-sm mt-1">{stock.total_ESG_grade}</div>
+      <div className="flex">
+        <div className="w-3/5 p-4">
+          <div className={`text-3xl font-bold ${performance.trend === 'negative' ? 'text-red-600' : ''}`}>
+            $49,825.82{' '}
+            <span className={`text-${performance.trend === 'positive' ? 'green' : performance.trend === 'negative' ? 'red' : 'gray'}-600 text-xl`}>
+              {performance.trend === 'positive' ? '▲' : performance.trend === 'negative' ? '▼' : ''}
+              {performance.change.toFixed(2)}% ${performance.amount.toFixed(2)}
+            </span>
+          </div>
+          <div className="text-gray-600">
+            {performance.trend === 'positive'
+              ? 'Strong performance 💪'
+              : performance.trend === 'negative'
+              ? 'Needs Improvement 😟'
+              : 'Neutral Performance 😐'}
+          </div>
+          <div className="mt-4">
+            <StockChart symbol={selectedStock} />
+          </div>
+          {/* ESG Recommendations */}
+          <div className="mt-4">
+            <h2 className="text-lg font-semibold mb-2">ESG Improvement Recommendations</h2>
+            <ul>
+              {recommendations.map(stock => (
+                <li key={stock.symbol} className="mb-2">
+                  <div className="flex justify-between items-center">
+                    <span>
+                      {stock.name} ({stock.symbol})
+                    </span>
+                    <span className="text-green-600">{stock.recommendation}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+          {/* Potential Stocks */}
+          <div className="mt-4">
+            <h2 className="text-lg font-semibold mb-2">Potential Stocks</h2>
+            <div className="mb-2">
+              <input
+                type="text"
+                value={newStock}
+                onChange={e => setNewStock(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                placeholder="Enter stock name"
+              />
+              <button
+                onClick={handleAddPotentialStock}
+                className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Add Stock
+              </button>
             </div>
-          ))}
+            <ul className="flex space-x-2">
+              {potentialStocks.map((stock, index) => (
+                <li key={index} className="p-2 bg-gray-200 rounded-lg">
+                  {stock}
+                </li>
+              ))}
+            </ul>
+
+            <button
+              onClick={handleSubmitPotentialStocks}
+              className="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              Submit Potential Stocks
+            </button>
+          </div>
+        </div>
+        <div className={`w-2/5 p-4 rounded-lg ${bgColor}`}>
+          <h2 className="text-lg font-semibold mb-2">Allocation</h2>
+          <div className="grid grid-cols-2 gap-4">
+            {stocks.map(stock => (
+              <div
+                key={stock.symbol}
+                className={`p-4 ${selectedStock === stock.symbol ? 'bg-blue-600' : stock.color} rounded-lg text-white flex flex-col items-center cursor-pointer ${getBoxSize(
+                  stock.volume
+                )}`}
+                onClick={() => handleStockClick(stock.symbol)}
+              >
+                <div className="flex items-center">
+                  <span className="text-xl font-semibold">{stock.name}</span>
+                  <span className="ml-2 text-sm">{stock.symbol}</span>
+                </div>
+                <div className="text-lg font-semibold mt-2">{stock.volume.toLocaleString()}</div>
+                <div className="text-sm mt-1">{stock.total_ESG_grade}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-      <button
-        onClick={handleLogout}
-        className="mt-4 px-4 py-2 bg-red-600 text-white rounded absolute top-4 right-4"
-      >
-        Logout
-      </button>
     </div>
   );
 };
