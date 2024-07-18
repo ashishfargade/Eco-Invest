@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../authSlice';
 import StockChart from '../components/StockChart';
@@ -8,13 +8,10 @@ import { useSelector } from 'react-redux';
 const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [selectedStock, setSelectedStock] = useState(null); // Initialize selectedStock to null
+  const [selectedStock, setSelectedStock] = useState('IBM');
   const [bgColor, setBgColor] = useState('bg-black-500');
   const [performance, setPerformance] = useState({ change: 0, amount: 0, trend: 'neutral' });
-  const [newStock, setNewStock] = useState('');
-  const [potentialStocks, setPotentialStocks] = useState([]);
-
-  const token = useSelector((state) => state.auth.token);
+  const [recommendations, setRecommendations] = useState([]);
 
   const handleLogout = () => {
     dispatch(logout()); // Clear the authentication state
@@ -22,14 +19,14 @@ const Dashboard = () => {
   };
 
   const stocks = [
-    { name: 'IBM', symbol: 'IBM', color: 'bg-gray-800', volume: 250000 },
-    { name: 'Microsoft', symbol: 'MSFT', color: 'bg-gray-800', volume: 300000 },
-    { name: 'Google', symbol: 'GOOGL', color: 'bg-gray-800', volume: 150000 },
-    { name: 'Nvidia', symbol: 'NVDA', color: 'bg-gray-800', volume: 100000 },
-    { name: 'Meta', symbol: 'META', color: 'bg-gray-800', volume: 200000 },
-    { name: 'AMD', symbol: 'AMD', color: 'bg-gray-800', volume: 175000 },
-    { name: 'Micron', symbol: 'MU', color: 'bg-gray-800', volume: 80000 },
-    { name: 'Crowd', symbol: 'CRWD', color: 'bg-gray-800', volume: 90000 },
+    { name: 'IBM', symbol: 'IBM', color: 'bg-gray-800', volume: 250000},
+    { name: 'Microsoft', symbol: 'MSFT', color: 'bg-gray-800', volume: 300000},
+    { name: 'Google', symbol: 'GOOGL', color: 'bg-gray-800', volume: 150000},
+    { name: 'Nvidia', symbol: 'NVDA', color: 'bg-gray-800', volume: 100000},
+    { name: 'Meta', symbol: 'META', color: 'bg-gray-800', volume: 200000},
+    { name: 'AMD', symbol: 'AMD', color: 'bg-gray-800', volume: 175000},
+    { name: 'Micron', symbol: 'MU', color: 'bg-gray-800', volume: 80000},
+    { name: 'Crowd', symbol: 'CRWD', color: 'bg-gray-800', volume: 90000},
   ];
 
   useEffect(() => {
@@ -48,15 +45,20 @@ const Dashboard = () => {
       setBgColor('bg-red-100');
     }
 
-    // Only fetch performance data if selectedStock is not null (initial state)
-    if (selectedStock !== null) {
-      updatePerformance(selectedStock);
-    }
-
     // Fetch ESG recommendations
-    // fetchRecommendations();
+    fetchRecommendations();
 
-  }, [stocks, selectedStock]);
+  }, [stocks]);
+
+  const fetchRecommendations = async () => {
+    try {
+      const response = await fetch('/api/esg-recommendations');
+      const data = await response.json();
+      setRecommendations(data);
+    } catch (error) {
+      console.error('Error fetching ESG recommendations:', error);
+    }
+  };
 
   const handleStockClick = (symbol) => {
     setSelectedStock(symbol);
