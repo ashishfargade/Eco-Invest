@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../authSlice';
 import StockChart from '../components/StockChart';
@@ -7,47 +7,61 @@ import StockChart from '../components/StockChart';
 const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [selectedStock, setSelectedStock] = useState('IBM');
+  const [selectedStock, setSelectedStock] = useState('');
   const [bgColor, setBgColor] = useState('bg-black-500');
   const [performance, setPerformance] = useState({ change: 0, amount: 0, trend: 'neutral' });
   const [recommendations, setRecommendations] = useState([]);
+  const [userStocks, setUserStocks] = useState([]);
+  const [tickers, setTickers] = useState('');
 
-  const handleLogout = () => {
-    dispatch(logout()); // Clear the authentication state
-    navigate('/login'); // Redirect to the login page
-  };
-
-  const stocks = [
-    { name: 'IBM', symbol: 'IBM', color: 'bg-gray-800', volume: 250000},
-    { name: 'Microsoft', symbol: 'MSFT', color: 'bg-gray-800', volume: 300000},
-    { name: 'Google', symbol: 'GOOGL', color: 'bg-gray-800', volume: 150000},
-    { name: 'Nvidia', symbol: 'NVDA', color: 'bg-gray-800', volume: 100000},
-    { name: 'Meta', symbol: 'META', color: 'bg-gray-800', volume: 200000},
-    { name: 'AMD', symbol: 'AMD', color: 'bg-gray-800', volume: 175000},
-    { name: 'Micron', symbol: 'MU', color: 'bg-gray-800', volume: 80000},
-    { name: 'Crowd', symbol: 'CRWD', color: 'bg-gray-800', volume: 90000},
-  ];
+  const tokenFromState = useSelector((state) => state.auth.token);
+  const token = tokenFromState || localStorage.getItem('token');
 
   useEffect(() => {
-    const calculateESGValue = () => {
-      const totalESGValue = stocks.reduce((acc, stock) => acc + stock.total_esg_value, 0);
-      return totalESGValue / stocks.length;
-    };
-
-    const totalESGValue = calculateESGValue();
-
-    if (totalESGValue >= 80) {
-      setBgColor('bg-green-400');
-    } else if (totalESGValue >= 40) {
-      setBgColor('bg-yellow-100');
-    } else {
-      setBgColor('bg-red-100');
+    if (tokenFromState) {
+      localStorage.setItem('token', tokenFromState);
     }
+  }, [tokenFromState]);
 
-    // Fetch ESG recommendations
-    fetchRecommendations();
+  const fetchUserStocks = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/userStock/userownedstock', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token
+        },
+        credentials: 'include',
+      });
 
-  }, [stocks]);
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data);
+        setUserStocks(data);
+
+        // Extract tickers and set them in state
+        const tick = data.map(stock => stock.ticker.toUpperCase());
+        setTickers(tick);
+        console.log(tickers)
+      } else {
+        const data = await response.json();
+        console.error('Failed to fetch user owned stocks:', data.errors);
+      }
+    } catch (error) {
+      console.error('Error fetching user owned stocks:', error);
+    }
+  };
+  
+  useEffect(() => {
+    fetchUserStocks();
+    
+  }, []);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
   const fetchRecommendations = async () => {
     try {
@@ -82,6 +96,17 @@ const Dashboard = () => {
       console.error('Error fetching performance data:', error);
     }
   };
+
+  const stocks = [
+    { name: 'IBM', symbol: 'IBM', color: 'bg-gray-800', volume: 250000 },
+    { name: 'Microsoft', symbol: 'MSFT', color: 'bg-gray-800', volume: 300000 },
+    { name: 'Google', symbol: 'GOOGL', color: 'bg-gray-800', volume: 150000 },
+    { name: 'Nvidia', symbol: 'NVDA', color: 'bg-gray-800', volume: 100000 },
+    { name: 'Meta', symbol: 'META', color: 'bg-gray-800', volume: 200000 },
+    { name: 'AMD', symbol: 'AMD', color: 'bg-gray-800', volume: 175000 },
+    { name: 'Micron', symbol: 'MU', color: 'bg-gray-800', volume: 80000 },
+    { name: 'Crowd', symbol: 'CRWD', color: 'bg-gray-800', volume: 90000 },
+  ];
 
   const getBoxSize = (volume) => {
     const maxVolume = Math.max(...stocks.map(stock => stock.volume));

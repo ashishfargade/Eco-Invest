@@ -17,7 +17,7 @@ const Navbar = () => {
         <nav className="bg-gray-800 p-4 sticky top-0 z-50">
             <div className="container mx-auto flex justify-between items-center">
                 <div className="navbar-left">
-                    <img src={Logo} alt="Logo" className="h-10 w-auto" />
+                    {/* <img src={Logo} alt="Logo" className="h-10 w-auto" /> */}
                 </div>
                 <div className="hidden md:flex space-x-4">
                     <Link to="/" className="text-white hover:text-blue-300">Home</Link>
