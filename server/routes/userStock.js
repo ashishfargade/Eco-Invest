@@ -4,11 +4,10 @@ import { check, validationResult } from "express-validator";
 import User from "../models/User.js";
 import Stock from "../models/Stock.js";
 import { auth } from "../middleware/auth.js";
-import { getStockPrice } from "../apis/fetchStockPrice.js";
 
 const router = Router();
 
-router.put("/", [
+router.put("/userownedstock", [
     auth,
     [
         check('ticker', 'Ticker is required').not().isEmpty(),
@@ -67,5 +66,6 @@ async (req, res) => {
         res.status(500).send("Server error");
     }
 });
+
 
 export default router;
