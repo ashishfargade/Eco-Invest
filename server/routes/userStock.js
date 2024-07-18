@@ -99,6 +99,7 @@ router.post("/interestStocks", auth, [
     }
 
     const { stocks } = req.body;
+    console.log(req.body);
 
     try {
         const user = await User.findById(req.user.id);

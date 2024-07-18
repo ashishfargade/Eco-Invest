@@ -3,14 +3,18 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../authSlice';
 import StockChart from '../components/StockChart';
+import { useSelector } from 'react-redux';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [selectedStock, setSelectedStock] = useState('IBM');
+  const [selectedStock, setSelectedStock] = useState(null); // Initialize selectedStock to null
   const [bgColor, setBgColor] = useState('bg-black-500');
   const [performance, setPerformance] = useState({ change: 0, amount: 0, trend: 'neutral' });
-  const [recommendations, setRecommendations] = useState([]);
+  const [newStock, setNewStock] = useState('');
+  const [potentialStocks, setPotentialStocks] = useState([]);
+
+  const token = useSelector((state) => state.auth.token);
 
   const handleLogout = () => {
     dispatch(logout()); // Clear the authentication state
@@ -18,14 +22,14 @@ const Dashboard = () => {
   };
 
   const stocks = [
-    { name: 'IBM', symbol: 'IBM', color: 'bg-gray-800', volume: 250000},
-    { name: 'Microsoft', symbol: 'MSFT', color: 'bg-gray-800', volume: 300000},
-    { name: 'Google', symbol: 'GOOGL', color: 'bg-gray-800', volume: 150000},
-    { name: 'Nvidia', symbol: 'NVDA', color: 'bg-gray-800', volume: 100000},
-    { name: 'Meta', symbol: 'META', color: 'bg-gray-800', volume: 200000},
-    { name: 'AMD', symbol: 'AMD', color: 'bg-gray-800', volume: 175000},
-    { name: 'Micron', symbol: 'MU', color: 'bg-gray-800', volume: 80000},
-    { name: 'Crowd', symbol: 'CRWD', color: 'bg-gray-800', volume: 90000},
+    { name: 'IBM', symbol: 'IBM', color: 'bg-gray-800', volume: 250000 },
+    { name: 'Microsoft', symbol: 'MSFT', color: 'bg-gray-800', volume: 300000 },
+    { name: 'Google', symbol: 'GOOGL', color: 'bg-gray-800', volume: 150000 },
+    { name: 'Nvidia', symbol: 'NVDA', color: 'bg-gray-800', volume: 100000 },
+    { name: 'Meta', symbol: 'META', color: 'bg-gray-800', volume: 200000 },
+    { name: 'AMD', symbol: 'AMD', color: 'bg-gray-800', volume: 175000 },
+    { name: 'Micron', symbol: 'MU', color: 'bg-gray-800', volume: 80000 },
+    { name: 'Crowd', symbol: 'CRWD', color: 'bg-gray-800', volume: 90000 },
   ];
 
   useEffect(() => {
@@ -44,24 +48,18 @@ const Dashboard = () => {
       setBgColor('bg-red-100');
     }
 
-    // Fetch ESG recommendations
-    fetchRecommendations();
-
-  }, [stocks]);
-
-  const fetchRecommendations = async () => {
-    try {
-      const response = await fetch('/api/esg-recommendations');
-      const data = await response.json();
-      setRecommendations(data);
-    } catch (error) {
-      console.error('Error fetching ESG recommendations:', error);
+    // Only fetch performance data if selectedStock is not null (initial state)
+    if (selectedStock !== null) {
+      updatePerformance(selectedStock);
     }
-  };
+
+    // Fetch ESG recommendations
+    // fetchRecommendations();
+
+  }, [stocks, selectedStock]);
 
   const handleStockClick = (symbol) => {
     setSelectedStock(symbol);
-    updatePerformance(symbol);
   };
 
   const updatePerformance = async (symbol) => {
@@ -88,30 +86,96 @@ const Dashboard = () => {
     return `h-${Math.floor((volume / maxVolume) * 20) + 10} w-${Math.floor((volume / maxVolume) * 20) + 10}`;
   };
 
+  const handleAddPotentialStock = () => {
+    if (newStock && !potentialStocks.includes(newStock)) {
+      setPotentialStocks([...potentialStocks, newStock]);
+      setNewStock('');
+    }
+  };
+
+  const handleSubmitPotentialStocks = async () => {
+    console.log('Token:', token);
+    const formattedStocks = potentialStocks.map(stock => ({
+      "ticker": stock.toUpperCase()
+    }));
+    console.log(formattedStocks);
+  
+    try {
+      const response = await fetch('http://localhost:8000/api/userStock/interestStocks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token
+        },
+        body: JSON.stringify({ "stocks": formattedStocks }),
+      });
+  
+      const data = await response.json();
+      console.log('Submitted potential stocks:', data);
+  
+      // Optionally handle response or navigate to another page
+    } catch (error) {
+      console.error('Error submitting potential stocks:', error);
+    }
+  };
+  
+
   return (
     <div className="flex h-screen p-4 bg-white">
       <div className="w-3/5 p-4">
         <h1 className="text-3xl font-semibold mb-4">Evaluation</h1>
-        <div className={`text-5xl font-bold ${performance.trend === 'negative' ? 'text-red-600' : ''}`}>$49,825.82 <span className={`text-${performance.trend === 'positive' ? 'green' : performance.trend === 'negative' ? 'red' : 'gray'}-600 text-xl`}>{performance.trend === 'positive' ? '▲' : performance.trend === 'negative' ? '▼' : ''}{performance.change.toFixed(2)}% ${performance.amount.toFixed(2)}</span></div>
-        <div className="text-gray-600">{performance.trend === 'positive' ? 'Strong performance 💪' : performance.trend === 'negative' ? 'Needs Improvement 😟' : 'Neutral Performance 😐'}</div>
-        <div className="mt-6">
-          <StockChart symbol={selectedStock} />
+        <div className={`text-5xl font-bold ${performance.trend === 'negative' ? 'text-red-600' : ''}`}>
+          $49,825.82{' '}
+          <span className={`text-${performance.trend === 'positive' ? 'green' : performance.trend === 'negative' ? 'red' : 'gray'}-600 text-xl`}>
+            {performance.trend === 'positive' ? '▲' : performance.trend === 'negative' ? '▼' : ''}
+            {performance.change.toFixed(2)}% ${performance.amount.toFixed(2)}
+          </span>
         </div>
-        {/* ESG Recommendations */}
+        <div className="text-gray-600">
+          {performance.trend === 'positive'
+            ? 'Strong performance 💪'
+            : performance.trend === 'negative'
+            ? 'Needs Improvement 😟'
+            : 'Neutral Performance 😐'}
+        </div>
         <div className="mt-6">
-          <h2 className="text-xl font-semibold mb-4">ESG Improvement Recommendations</h2>
-          <ul>
-            {recommendations.map(stock => (
-              <li key={stock.symbol} className="mb-2">
-                <div className="flex justify-between items-center">
-                  <span>{stock.name} ({stock.symbol})</span>
-                  <span className="text-green-600">{stock.recommendation}</span>
-                </div>
+          {selectedStock && <StockChart symbol={selectedStock} />}
+        </div>
+
+        <div className="mt-4">
+          <h2 className="text-lg font-semibold mb-2">Potential Stocks</h2>
+          <div className="mb-2">
+            <input
+              type="text"
+              value={newStock}
+              onChange={e => setNewStock(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="Enter stock name"
+            />
+            <button
+              onClick={handleAddPotentialStock}
+              className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Add Stock
+            </button>
+          </div>
+          <ul className="flex flex-wrap">
+            {potentialStocks.map((stock, index) => (
+              <li key={index} className="p-2 bg-gray-200 rounded-lg m-1">
+                {stock}
               </li>
             ))}
           </ul>
+
+          <button
+            onClick={handleSubmitPotentialStocks}
+            className="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            Submit Potential Stocks
+          </button>
         </div>
       </div>
+
       <div className={`w-2/5 p-4 rounded-lg ${bgColor}`}>
         <h2 className="text-xl font-semibold mb-4">Allocation</h2>
         <div className="grid grid-cols-2 gap-4">

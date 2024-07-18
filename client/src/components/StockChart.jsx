@@ -11,7 +11,7 @@ const StockChart = ({ symbol }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol.toUpperCase()}&apikey=0RL0C2RR4YR7NS1T`);
+        const response = await fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=0RL0C2RR4YR7NS1T`);
         const data = await response.json();
 
         if (!data['Time Series (Daily)']) {
