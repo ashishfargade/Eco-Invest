@@ -37,7 +37,7 @@ const UserSchema = mongoose.Schema({
         default: Date.now
     },
     ownedStocks: [UserStockSchema],
-    intrestStocks: [UserStockSchema]
+    // interestStocks: [UserStockSchema]
 })
 
 const User = mongoose.model('UserSchema', UserSchema);
