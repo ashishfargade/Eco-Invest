@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { check, validationResult } from "express-validator";
+import axios from "axios";
 
 import User from "../models/User.js";
 import Stock from "../models/Stock.js";
@@ -61,6 +62,58 @@ async (req, res) => {
 
         res.json(user.ownedStocks);
         
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+});
+
+// POST request to update user interest stocks
+router.post("/interestStocks", auth, [
+    check('stocks', 'Stocks are required').isArray().notEmpty()
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { stocks } = req.body;
+
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ msg: "User not found" });
+        }
+
+        // Fetch the user's owned stocks from the database
+        const holdings = user.ownedStocks.map(stock => ({
+            ticker: stock.ticker,
+            volume: stock.volume
+        }));
+
+        // Send the request to the Flask server to update user holdings
+        const updateHoldingsResponse = await axios.post('http://localhost:5000/api/data/userholdings', { stocks: holdings });
+
+        if (updateHoldingsResponse.status !== 200) {
+            return res.status(updateHoldingsResponse.status).json({ msg: updateHoldingsResponse.data.error });
+        }
+
+        // Send the request to the Flask server to get metrics
+        const getMetricsResponse = await axios.post('http://localhost:5000/api/getmetrics', { stocks: stocks.map(stock => stock.ticker) });
+
+        if (getMetricsResponse.status !== 200) {
+            return res.status(getMetricsResponse.status).json({ msg: getMetricsResponse.data.error });
+        }
+
+        // Send the request to the Flask server to predict recommendations
+        const predictResponse = await axios.get('http://localhost:5000/api/predict');
+
+        if (predictResponse.status !== 200) {
+            return res.status(predictResponse.status).json({ msg: predictResponse.data.error });
+        }
+
+        res.json({ msg: 'User interest stocks, metrics, and predictions updated successfully!', predictions: predictResponse.data });
+
     } catch (err) {
         console.error(err.message);
         res.status(500).send("Server error");
