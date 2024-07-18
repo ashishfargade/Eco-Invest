@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { logout } from '../authSlice';
 import StockChart from '../components/StockChart';
 
@@ -45,19 +46,21 @@ const Dashboard = () => {
     }
 
     // Fetch ESG recommendations
-    fetchRecommendations();
+    // fetchRecommendations();
 
   }, [stocks]);
 
-  const fetchRecommendations = async () => {
-    try {
-      const response = await fetch('/api/esg-recommendations');
-      const data = await response.json();
-      setRecommendations(data);
-    } catch (error) {
-      console.error('Error fetching ESG recommendations:', error);
-    }
-  };
+  // const fetchRecommendations = async () => {
+  //   e.preventDefault();
+    
+  //   try {
+  //     const response = await fetch('/api/esg-recommendations');
+  //     const data = await response.json();
+  //     setRecommendations(data);
+  //   } catch (error) {
+  //     console.error('Error fetching ESG recommendations:', error);
+  //   }
+  // };
 
   const handleStockClick = (symbol) => {
     setSelectedStock(symbol);
