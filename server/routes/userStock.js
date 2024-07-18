@@ -8,6 +8,25 @@ import { auth } from "../middleware/auth.js";
 
 const router = Router();
 
+router.get("/userownedstock", auth, async (req, res) => {
+    try {
+        // Find user in db
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ msg: "User not found" });
+        }
+
+        // Return the owned stocks and their volumes
+        res.json(user.ownedStocks);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+});
+
+
+//Insert into User owned stock
 router.put("/userownedstock", [
     auth,
     [
@@ -67,6 +86,8 @@ async (req, res) => {
         res.status(500).send("Server error");
     }
 });
+
+
 
 // POST request to update user interest stocks
 router.post("/interestStocks", auth, [
