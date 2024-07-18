@@ -14,22 +14,18 @@ const Dashboard = () => {
   const [potentialStocks, setPotentialStocks] = useState([]);
   const [newStock, setNewStock] = useState('');
 
+  // Logout Function
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
   };
 
+  // User data mock
   const user = { name: 'Ashish Sanjay Fargade' };
 
+  // Stocks mock data
   const stocks = [
-    // { name: 'IBM', symbol: 'IBM', color: 'bg-gray-800', volume: 250000, industry: 'Tech', total_ESG_grade: 'A', total_esg_value: 90 },
-    // { name: 'Microsoft', symbol: 'MSFT', color: 'bg-gray-800', volume: 300000, industry: 'Tech', total_ESG_grade: 'AA', total_esg_value: 85 },
-    // { name: 'Google', symbol: 'GOOGL', color: 'bg-gray-800', volume: 150000, industry: 'Tech', total_ESG_grade: 'A', total_esg_value: 88 },
-    // { name: 'Nvidia', symbol: 'NVDA', color: 'bg-gray-800', volume: 100000, industry: 'Tech', total_ESG_grade: 'B', total_esg_value: 60 },
-    // { name: 'Meta', symbol: 'META', color: 'bg-gray-800', volume: 200000, industry: 'Tech', total_ESG_grade: 'BB', total_esg_value: 85 },
-    // { name: 'AMD', symbol: 'AMD', color: 'bg-gray-800', volume: 175000, industry: 'Tech', total_ESG_grade: 'B', total_esg_value: 80 },
-    // { name: 'Micron', symbol: 'MU', color: 'bg-gray-800', volume: 80000, industry: 'Tech', total_ESG_grade: 'AA', total_esg_value: 82 },
-    // { name: 'Crowd', symbol: 'CRWD', color: 'bg-gray-800', volume: 90000, industry: 'Tech', total_ESG_grade: 'A', total_esg_value: 88 },
+    // Your stock data here
   ];
 
   useEffect(() => {
@@ -100,15 +96,20 @@ const Dashboard = () => {
   };
 
   const handleSubmitPotentialStocks = async () => {
+    const formattedStocks = potentialStocks.map(stock => ({
+      ticker: stock.toUpperCase()
+    }));
     try {
       //to flask server
-      const response = await fetch('http://localhost:8000/api/getmetrics', {
+      const response = await fetch('http://localhost:8000/api/userStock/interestStocks', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          
         },
-        body: JSON.stringify({ potentialStocks }),
+        body: JSON.stringify({ stocks: formattedStocks }),
       });
+
       const data = await response.json();
       console.log('Submitted potential stocks:', data);
     } catch (error) {
@@ -121,6 +122,13 @@ const Dashboard = () => {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-semibold">Evaluation</h1>
         <div className="text-gray-700">{user.name}</div>
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+        >
+          Logout
+        </button>
       </div>
       <div className="flex">
         <div className="w-3/5 p-4">
