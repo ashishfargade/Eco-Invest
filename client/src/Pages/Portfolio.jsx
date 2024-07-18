@@ -4,7 +4,6 @@ const Portfolio = () => {
   const [stocks, setStocks] = useState([
     { id: 1, name: 'IBM', ticker: 'IBM', price: 145, volume: 100, dateBought: '2023-01-10', currentPrice: 150 },
     { id: 2, name: 'Microsoft', ticker: 'MSFT', price: 300, volume: 50, dateBought: '2023-02-15', currentPrice: 320 },
-    // Add more stocks as needed
   ]);
   const [selectedStock, setSelectedStock] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -34,9 +33,9 @@ const Portfolio = () => {
   const calculatePrice = (price, volume) => (price * volume).toFixed(2);
 
   return (
-    <div className="flex h-screen p-4 bg-gray-50">
+    <div className="flex h-screen p-4 bg-gray-50 text-sm">
       <div className="w-2/5 p-4 bg-white rounded-lg shadow-lg">
-        <h2 className="text-2xl font-semibold mb-4 text-blue-600">List of Owned Stocks</h2>
+        <h2 className="text-lg font-semibold mb-4 text-blue-600">List of Owned Stocks</h2>
         <ul>
           {stocks.map(stock => (
             <li
@@ -58,7 +57,7 @@ const Portfolio = () => {
       <div className="w-3/5 p-4 bg-white rounded-lg shadow-lg ml-4">
         {isAdding ? (
           <div>
-            <h2 className="text-2xl font-semibold mb-4 text-blue-600">Add New Stock</h2>
+            <h2 className="text-lg font-semibold mb-4 text-blue-600">Add New Stock</h2>
             <form>
               <div className="mb-4">
                 <label className="block text-gray-700">Stock Name</label>
@@ -131,7 +130,7 @@ const Portfolio = () => {
           </div>
         ) : selectedStock ? (
           <div>
-            <h2 className="text-2xl font-semibold mb-4 text-blue-600">{selectedStock.name} Details</h2>
+            <h2 className="text-lg font-semibold mb-4 text-blue-600">{selectedStock.name} Details</h2>
             <p><strong>Stock Title:</strong> {selectedStock.name}</p>
             <p><strong>Ticker:</strong> {selectedStock.ticker}</p>
             <p><strong>Volume:</strong> {selectedStock.volume}</p>
@@ -148,7 +147,7 @@ const Portfolio = () => {
           </div>
         ) : (
           <div>
-            <h2 className="text-2xl font-semibold mb-4 text-blue-600">Select a Stock to View Details</h2>
+            <h2 className="text-lg font-semibold mb-4 text-blue-600">Select a Stock to View Details</h2>
           </div>
         )}
       </div>
